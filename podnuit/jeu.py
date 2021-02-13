@@ -22,6 +22,7 @@ class Jeu:
         self.joueurs = dict()
         self.votes = None
         self.n_votes = None
+        self.n_votes_for = None
         self.target_n = None
         self.last_dead = None
         self.round_number = 0
@@ -78,8 +79,11 @@ class Jeu:
         self.game_state = GameState.PLAYING
         self.round_number += 1
         self.votes = dict()
+        self.n_votes_for = dict()
         for p in self.get_alive_players():
             self.votes[p] = ""
+            self.n_votes_for[p] = 0
+            self.joueurs[p].set_n_votes_for(0)
         self.n_votes = 0
         self.target_n = len(self.get_alive_players())
         self.lock_vote = False
@@ -99,7 +103,11 @@ class Jeu:
             self.votes[voter] = voted
             self.n_votes += 1
         else:
+            self.n_votes_for[self.votes[voter]] -= 1
             self.votes[voter] = voted
+
+        self.n_votes_for[voted] += 1
+        self.joueurs[voted].set_n_votes_for(self.n_votes_for[voted])
         self.joueurs[voter].voted_for(voted)
 
     def vote_is_done(self):
@@ -110,6 +118,7 @@ class Jeu:
         """
         if self.n_votes == self.target_n:
             self.game_state = GameState.DEATH
+            self.lock_vote = True
             return True
         return False
 

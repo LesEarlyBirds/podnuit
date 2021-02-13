@@ -6,9 +6,13 @@ class Joueur:
         self._alive = True
         self._death_round = 0
         self._voted_for = "N/A"
+        self._n_votes_for = 0
 
     def get_name(self):
         return self._name
+
+    def set_n_votes_for(self, n):
+        self._n_votes_for = n
 
     def get_ident(self):
         return self._ident
@@ -35,7 +39,8 @@ class Joueur:
                 "is_alive": self._alive,
                 "ident": self._ident,
                 "death_round": self._death_round,
-                "voted_for": self._voted_for}
+                "voted_for": self._voted_for,
+                "n_votes_for": self._n_votes_for}
 
     def kill(self, round_number):
         if not self._alive:
