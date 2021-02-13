@@ -8,7 +8,7 @@ with open(os.path.join(HERE, "README.md")) as f:
 
 setuptools.setup(
     name="podnuit",
-    version="1.2.1",
+    version="1.2.2",
     author="Olivier Mailhot",
     description="Loup-garou pas de nuit",
     long_description=README,

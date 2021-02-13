@@ -11,6 +11,9 @@ class Joueur:
     def get_name(self):
         return self._name
 
+    def get_display_name(self):
+        return self._display_name
+
     def set_n_votes_for(self, n):
         self._n_votes_for = n
 
