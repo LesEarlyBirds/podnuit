@@ -1,6 +1,14 @@
 from podnuit.joueur import Joueur
 from podnuit.victoire import Victoire
+from enum import IntEnum
 import random
+
+class GameState(IntEnum):
+    LOGIN = -1
+    LOBBY = 0
+    PLAYING = 1
+    DEATH = 2
+    END = 3
 
 class Jeu:
     """Jeu de loup-garou pas de nuit.
@@ -19,7 +27,7 @@ class Jeu:
         self.round_number = 0
         self._victory = None
         self.lock_vote = False
-        self.game_state = "lobby"
+        self.game_state = GameState.LOBBY
 
     def setup(self, player_names, roles=None):
         """player_names is a dict: player_names[id] = display_name"""
@@ -61,13 +69,13 @@ class Jeu:
         self.lock_vote = True
         for voter in self.votes:
             self.votes[voter] = name
-        self.game_state = "just_voted"
+        self.game_state = GameState.DEATH
 
     def start_round(self):
         """Has to be called at the beginning of each round.
 
         """
-        self.game_state = "voting"
+        self.game_state = GameState.PLAYING
         self.round_number += 1
         self.votes = dict()
         for p in self.get_alive_players():
@@ -101,7 +109,7 @@ class Jeu:
             bool: True if everyone has voted.
         """
         if self.n_votes == self.target_n:
-            self.game_state = "just_voted"
+            self.game_state = GameState.DEATH
             return True
         return False
 
@@ -148,13 +156,15 @@ class Jeu:
                     self._victory = Victoire("pede", alive_players, self.joueurs)
                 else:
                     self._victory = Victoire("loup-garou", alive_players, self.joueurs)
+                self.game_state = GameState.END
                 return True
         if "loup-garou" not in identities:
             self._victory = Victoire("ble", alive_players, self.joueurs)
+            self.game_state = GameState.END
             return True
         if "tony" not in identities and self.round_number == 1:
             self._victory = Victoire("tony", alive_players, self.joueurs)
-            self.game_state = "victory"
+            self.game_state = GameState.END
             return True
         return False
 
