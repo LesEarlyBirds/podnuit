@@ -1,8 +1,11 @@
 class Joueur:
-    def __init__(self, name):
+    def __init__(self, name, display_name):
         self._name = name
+        self._display_name = display_name
         self._ident = None
         self._alive = True
+        self._death_round = 0
+        self._voted_for = "N/A"
 
     def get_name(self):
         return self._name
@@ -18,11 +21,23 @@ class Joueur:
     def reset(self):
         self._ident = None
         self._alive = True
+        self._death_round = 0
+        self._voted_for = "N/A"
+
+    def voted_for(self, voted):
+        self._voted_for = voted
 
     def is_alive(self):
         return self._alive
 
-    def kill(self):
+    def serialize(self):
+        return {"display_name": self._display_name,
+                "is_alive": self._alive,
+                "ident": self._ident,
+                "death_round": self._death_round,
+                "voted_for": self._voted_for}
+
+    def kill(self, round_number):
         if not self._alive:
             raise ValueError("Trying to kill already dead player: {}".format(self._name))
         self._alive = False

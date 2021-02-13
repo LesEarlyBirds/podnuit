@@ -18,14 +18,24 @@ class Jeu:
         self.last_dead = None
         self.round_number = 0
         self._victory = None
+        self.lock_vote = False
+        self.game_state = "lobby"
 
-    def setup(self, player_names):
-        self.__init__(roles=self.roles)
+    def setup(self, player_names, roles=None):
+        """player_names is a dict: player_names[id] = display_name"""
+        if roles is None:
+            self.__init__(roles=self.roles)
+        else:
+            self.__init__(roles=roles)
         for name in player_names:
             if name in self.joueurs.keys():
                 raise ValueError("Trying to add this player twice: {}".format(name))
-            self.joueurs[name] = Joueur(name)
+            self.joueurs[name] = Joueur(name, player_names[name])
         self.set_roles()
+
+
+    def get_game_state(self):
+        return self.game_state
 
     def set_roles(self):
         names = self.get_alive_players()
@@ -45,16 +55,26 @@ class Jeu:
         """
         return [x for x in self.joueurs.keys() if self.joueurs[x].is_alive()]
 
+    def remove_player(self, name):
+        """Removes the player from the game by killing them (everybody votes for that player).
+        """
+        self.lock_vote = True
+        for voter in self.votes:
+            self.votes[voter] = name
+        self.game_state = "just_voted"
+
     def start_round(self):
         """Has to be called at the beginning of each round.
 
         """
+        self.game_state = "voting"
         self.round_number += 1
         self.votes = dict()
         for p in self.get_alive_players():
             self.votes[p] = ""
         self.n_votes = 0
         self.target_n = len(self.get_alive_players())
+        self.lock_vote = False
 
     def vote(self, voter, voted):
         """Method for voting.
@@ -63,6 +83,8 @@ class Jeu:
             voter (str): The name of the player who is voting.
             voted (str): The name of the player against whom the voter votes.
         """
+        if self.lock_vote:
+            return
         assert voter in self.votes
         assert voted in self.votes
         if self.votes[voter] == "":
@@ -70,6 +92,7 @@ class Jeu:
             self.n_votes += 1
         else:
             self.votes[voter] = voted
+        self.joueurs[voter].voted_for(voted)
 
     def vote_is_done(self):
         """Tells the server when voting is done.
@@ -78,8 +101,10 @@ class Jeu:
             bool: True if everyone has voted.
         """
         if self.n_votes == self.target_n:
+            self.game_state = "just_voted"
             return True
         return False
+
 
     def get_dead_folk(self):
         """When voting is finished, determines dead person(s).
@@ -103,7 +128,7 @@ class Jeu:
         for d in dead:
             if dead[d] == max:
                 dead_folk.append(self.joueurs[d])
-                self.joueurs[d].kill()
+                self.joueurs[d].kill(self.round_number)
         self.last_dead = dead_folk
         return dead_folk
 
@@ -129,6 +154,7 @@ class Jeu:
             return True
         if "tony" not in identities and self.round_number == 1:
             self._victory = Victoire("tony", alive_players, self.joueurs)
+            self.game_state = "victory"
             return True
         return False
 
@@ -136,6 +162,9 @@ class Jeu:
         if self._victory is not None:
             return self._victory
         raise ValueError("get_victory() called before victory achieved")
+
+    def restart_game(self):
+        self.__init__(self.roles)
 
 
 if __name__ == "__main__":
