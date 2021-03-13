@@ -36,11 +36,14 @@ class Jeu:
             self.__init__(roles=self.roles)
         else:
             self.__init__(roles=roles)
+        if len(player_names) < len(roles):
+            return False
         for name in player_names:
             if name in self.joueurs.keys():
                 raise ValueError("Trying to add this player twice: {}".format(name))
             self.joueurs[name] = Joueur(name, player_names[name])
         self.set_roles()
+        return True
 
 
     def get_game_state(self):
@@ -98,8 +101,8 @@ class Jeu:
         """
         if self.lock_vote:
             return
-        assert voter in self.votes
-        assert voted in self.votes
+        if not voter in self.votes or not voted in self.votes:
+            return
         if self.votes[voter] == "":
             self.votes[voter] = voted
             self.n_votes += 1
