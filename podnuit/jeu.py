@@ -84,6 +84,7 @@ class Jeu:
             self.votes[p] = ""
             self.n_votes_for[p] = 0
             self.joueurs[p].set_n_votes_for(0)
+            self.joueurs[p].clear_vote()
         self.n_votes = 0
         self.target_n = len(self.get_alive_players())
         self.lock_vote = False
