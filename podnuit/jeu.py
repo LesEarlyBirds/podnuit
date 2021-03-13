@@ -105,6 +105,7 @@ class Jeu:
             self.n_votes += 1
         else:
             self.n_votes_for[self.votes[voter]] -= 1
+            self.joueurs[self.votes[voter]].set_n_votes_for(self.n_votes_for[self.votes[voter]])
             self.votes[voter] = voted
 
         self.n_votes_for[voted] += 1
